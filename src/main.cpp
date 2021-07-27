@@ -42,14 +42,6 @@ struct push<TypeList<Elems...>, Element> {
 template<typename List, typename Element>
 using pushT = typename push<List, Element>::type;
 
-template <typename List>
-struct Back;
-
-template <typename... Last, typename First>
-struct Back<TypeList<Last...,First>>
-{
-    typedef First type;
-};
 
 //indexing
 template <typename List, unsigned Index>           
@@ -75,9 +67,24 @@ struct ElementI<List,0> : FirstE<List>
 template <typename List, unsigned Index>
 using ElementT = typename Element<List,Index>::type;
 
+template <typename List>
+struct Back;
+
+template <typename... Args>
+struct Back<TypeList<Args...>>
+{
+    using type = typename Element<TypeList<Args...>, sizeof...(Args) - 1>::type;
+};
+
 int main() {
-	TypeList<int, double, bool> fisting;
-	
+	TypeList<int, double, bool> tl;
+
+    static_assert(std::is_same<typename popFirst<decltype(tl)>::type,TypeList<double,bool>>::value, "not same");
+    static_assert(std::is_same<typename push<decltype(tl),float>::type,TypeList<float,int,double,bool>>::value, "not same");
+    static_assert(std::is_same<typename Back<decltype(tl)>::type,bool>::value, "not same");
+    static_assert(std::is_same<typename ElementI<decltype(tl),0>::type,int>::value, "not same");
+    static_assert(std::is_same<typename ElementI<decltype(tl),1>::type,double>::value, "not same");
+    static_assert(std::is_same<ElementT<decltype(tl),2>,bool>::value, "not same");	
 		
 	return 0;
 }
